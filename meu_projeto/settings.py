@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure--i9flgcb3&n*td7$9^$fz#vzti11ll3su8vi8d7f1=9-@7sxt5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['projetoclientes-62em.onrender.com']
 
 
 # Application definition
@@ -77,11 +78,11 @@ WSGI_APPLICATION = 'meu_projeto.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'medicao',
-        'USER': 'root',
-        'PASSWORD': '*Back1245',
-        'HOST': '127.0.0.1',  # Ou o IP do servidor MySQL
-        'PORT': '3306',       # Porta padrão do MySQL
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST', default='127.0.0.1'),  # IP ou domínio do servidor MySQL
+        'PORT': config('DB_PORT', default='3306'),       # Porta padrão do MySQL
     }
 }
 
