@@ -121,14 +121,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Configuração para arquivos estáticos
-STATIC_URL = '/static/'
+STATIC_URL = '/static/'  # URL pública para acessar os arquivos estáticos
 
-STATIC_VERSION = "1.0"
+# Diretórios onde os arquivos estáticos são armazenados
+STATICFILES_DIRS = [BASE_DIR / "dashboard/static/dashboard/css"]
 
-# Opcional (para ambientes de produção):
-STATICFILES_DIRS = [
-    BASE_DIR / "dashboard/static",
-]
+# Diretório final onde o collectstatic consolida os arquivos para produção
 STATIC_ROOT = BASE_DIR / "staticfiles"
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
