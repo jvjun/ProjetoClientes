@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Medições</title>
+    <link rel="stylesheet" type="text/css" href="/static/dashboard/css/dashboard.css?v={{ STATIC_VERSION }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Dashboard de Medições</h1>
+
+    <!-- Formulário de Filtros -->
+    <form method="get" id="formulario-filtro" class="filter-form">
+        <label for="agente">Agente:</label>
+        <select name="agente" id="agente">
+            <option value="">Todos</option>
+            {% for agente in agentes %}
+            <option value="{{ agente }}" {% if agente == request.GET.agente %}selected{% endif %}>
+                {{ agente }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="ponto_grupo">Ponto Grupo:</label>
+        <select name="ponto_grupo" id="ponto_grupo">
+            <option value="">Todos</option>
+            {% for ponto in pontos_grupo %}
+            <option value="{{ ponto }}" {% if ponto == request.GET.ponto_grupo %}selected{% endif %}>
+                {{ ponto }}
+            </option>
+            {% endfor %}
+        </select>
+
+        <label for="data">Data:</label>
+        <input type="date" name="data" id="data" value="{{ request.GET.data }}">
+
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <!-- Gráfico -->
+    <section>
+        <h2>Gráfico de Energia Ativa (Ativa C) por Hora</h2>
+        <canvas id="ativaCChart"></canvas>
+    </section>
+
+    <!-- Tabela de Medições -->
+    <table>
+        <thead>
+            <tr>
+                <th><a href="?{% querystring page='' ordering='agente' %}">Agente</a></th>
+                <th><a href="?{% querystring page='' ordering='ponto_grupo' %}">Ponto Grupo</a></th>
+                <th><a href="?{% querystring page='' ordering='data' %}">Data</a></th>
+                <th>Hora</th>
+                <th>Ativa C</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for medicao in page_obj %}
+            <tr>
+                <td>{{ medicao.agente }}</td>
+                <td>{{ medicao.ponto_grupo }}</td>
+                <td>{{ medicao.data }}</td>
+                <td>{{ medicao.hora }}</td>
+                <td>{{ medicao.ativa_c }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Paginação -->
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1&agente={{ request.GET.agente }}&ponto_grupo={{ request.GET.ponto_grupo }}&data={{ request.GET.data }}">Primeira</a>
+            <a href="?page={{ page_obj.previous_page_number }}&agente={{ request.GET.agente }}&ponto_grupo={{ request.GET.ponto_grupo }}&data={{ request.GET.data }}">Anterior</a>
+        {% endif %}
+        <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&agente={{ request.GET.agente }}&ponto_grupo={{ request.GET.ponto_grupo }}&data={{ request.GET.data }}">Próxima</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}&agente={{ request.GET.agente }}&ponto_grupo={{ request.GET.ponto_grupo }}&data={{ request.GET.data }}">Última</a>
+        {% endif %}
+    </div>
+
+    <!-- Script do Gráfico -->
+    <script>
+        // Garantir que as variáveis labels e data recebam valores válidos
+        const labels = {{ horas|default:"[]"|safe }};
+        const data = {{ ativa_c_data|default:"[]"|safe }};
+    
+        // Limpar dados para substituir valores inválidos
+        const cleanLabels = labels.map(label => label ?? "Desconhecido"); // Substitui null/undefined por "Desconhecido"
+        const cleanData = data.map(value => value ?? 0); // Substitui null/undefined por 0
+    
+        if (cleanLabels.length === 0 || cleanData.length === 0) {
+            console.error("Os dados para o gráfico estão vazios ou inválidos.");
+        } else {
+            new Chart(document.getElementById('ativaCChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: cleanLabels, // Usar labels limpos
+                    datasets: [{
+                        label: 'Ativa C',
+                        data: cleanData, // Usar dados limpos
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Energia Ativa (Ativa C)',
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Hora',
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
